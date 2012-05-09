@@ -1,0 +1,204 @@
+package f4k; 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.io.FileReader;
+import java.io.PrintWriter;
+import java.io.BufferedReader;
+/**User class represent one person on the social network with their corresponding profile, friends, groups, and wall.
+ * @author TC PUGH
+ *
+ */
+public class User {
+String username;
+String password;
+Date dateOfCreation;
+Date dateOfBirth;
+ArrayList<Message> sentMessages;
+ArrayList<Message> receivedMessages;
+ArrayList<User> friends;
+Profile theProfile;
+Wall theWall;
+
+/**
+ * Contructor used when user is instantiated for the first time. Calls the save method and sets the date of creation. 
+ * @param dateOfBith User to set the users date of birth
+ * @param username Sets the identity that the user will have on the site
+ * @param password Sets the password so that the user can later log in securely 
+ */
+public User(Date dateOfBirth,String username,String password){
+this.dateOfBirth = dateOfBirth;
+this.username=username;
+this.password= password;
+theProfile = new Profile(username);
+theWall = new Wall(this);
+friends = new ArrayList<User>();
+save();	
+sentMessages =  new ArrayList<Message>();
+receivedMessages =new  ArrayList<Message>();
+}
+/**Empty constructor used when the Repositories bootstrap method is running. Does not call the save method. 
+ * 
+ */
+User(){
+	
+}
+/**
+ * Getter method for the Users date of birth. Used for populating display in users profile. 
+ * @return date of birth in Date format
+ */
+public Date getDateOfBirth(){
+	return dateOfBirth;
+}
+
+public Date getDateOfCreation(){
+	return dateOfCreation;
+}
+/**
+ * Getter method to return password. Used to verify identity during user login for securirty purposes. 
+ * @return
+ */
+public String getPassword(){
+	return password; 
+}
+/**
+ * Getter method for returning user name. Used for populating display in users'profile 
+ * @return String representing a users name on website. Example:"CandyLover7"
+ */
+public String getUsername(){
+	return username;
+}
+/**
+ * Getter method for retrieving users Wall Object
+ * @return wall object for one user
+ */
+public Wall getWall(){
+	return theWall;
+}
+/**
+ * Getter method for retrieving a users profile
+ * @return the particular users profile
+ */
+public Profile getProfile(){
+	return theProfile;
+}
+public ArrayList<Message> getSentMessage(){
+	return sentMessages;
+}
+
+public ArrayList<Message> getReceivedMessage(){
+	return receivedMessages;
+}
+
+/**
+ * Setter method for changing the users name. Used in bootstrap in order to populate an empty user object. 
+ * @param username
+ */
+public void setUsername(String username){
+	this.username = username; 
+}
+/**
+ * Setter method for changing a user names. Used in bootstrap in order to populate an empty user object. 
+ * @param password
+ */
+public void setPassword(String pw){
+	password = pw;
+}
+/**
+ * Setter method for a users date of birth. Used in bootstrap in order to populate an empty user object
+ * @param dateOfBirth
+ */
+public void setDateOfBirth(String dateOfBirth){
+
+}
+
+public void setDateOfCreation(String dateOfCreation){
+
+}
+/**Method to save all of the users information to the filesystem. This is called everytime information on the user is update.
+ * 
+ */
+private void save(){
+	try{
+	PrintWriter pw = new PrintWriter("../webapps/f4k/persistence/" + getUsername() + ".user");
+	pw.println(username);
+	pw.println(password);
+	pw.println(getDateOfBirth().getTime());
+	pw.println(getDateOfCreation().getTime());
+ 	pw.close();		
+	}
+	catch(Exception e){
+		e.printStackTrace();
+		}
+}
+
+/**
+ * Used to load in all the variables of an empty User object. 
+ * @param filename
+ */
+void load(String filename){
+	try{
+	FileReader fr = new FileReader(filename);
+	BufferedReader br = new BufferedReader(fr);
+	setUsername(br.readLine());
+	setPassword(br.readLine());
+	setDateOfBirth(br.readLine());
+	setDateOfCreation(br.readLine());
+	
+	}
+	catch(Exception e){	
+		e.printStackTrace();
+		}
+}
+/**
+ * The User adds one friend to their friend list so that they can later post on the wall of and otherwise communicate with the user. 
+ * @param friendsName The name of the friend in string format, which will be used as a key for the Hashmap of friends. 
+ */
+//ANYTIME YOU CALL THIS, REMEMBER TO ALSO CALL IT ON THE OTHER FRIEND'S USER OBJECT SO THEY CAN BE FRIENDS AND NOT STALKER-PREDATOR
+public void addFriend(String friendsName){
+	friends.add(Repository.instance().getUser(friendsName));
+}
+/**
+ * Removes one friend user from the users friend list so that they can no longer post on each others walls or otherwise communicate.
+ * @param friendsName Friends name used to remove the user from the HashMap
+ */
+
+//ANYTIME YOU CALL THIS, REMEMBER TO ALSO CALL IT ON THE OTHER FRIENDS USER OBJECT
+public void deleteFriend(String friendsName){
+	
+}
+/**
+ * Getter method for returning a list of users friend. Used to populate a list of the users friends to be displayed to the user. 
+ * @return All of the ::users friends. 
+ */
+public ArrayList<User> getAllFriends(){
+	return friends;
+}
+public boolean isFriend(User theFriend){
+	for(int i = 0; i <friends.size();i++){
+		if(theFriend.equals(friends.get(i)));
+		{
+			return true; 
+		}
+	}
+	return false;
+}
+/**Method used to send a message to another user. The method adds the message to the users sent messages ArrayList and also to the other users received messages Arraylist. 
+ * 
+ * @param message The text of the message that will be sent to the user. Example: "Whats up Buddy!"
+ * @param recipient The user the message is to be sent to
+ */
+public void sendMessage(Message message, User recipient){
+	sentMessages.add(message);
+	recipient.receiveMsg(message);	
+	System.out.println(this.getUsername() +" is sending a message");
+}
+/**Add the message to the Users received messages arraylist.
+ * 
+ * @param message The message to be received 
+ */
+public void receiveMsg(Message message){
+	receivedMessages.add(message); 
+	System.out.println(this.getUsername()+" is receiving a message");
+}
+}
